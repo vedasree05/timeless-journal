@@ -3,19 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Journal</title>
+    <title>Journal Page</title>
+    
+    <!-- Google Font (Cute font choice: 'Poppins') -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* Apply the cute font globally */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #fafafa; /* Light pastel background */
+            color: #333; /* Dark grey text for better contrast */
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff6f61; /* Pastel coral color */
+        }
+
+        h2 {
+            color: #ff6f61;
+            margin-top: 40px;
+        }
+
+        /* Style for the mood buttons */
+        .mood-btns {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .mood-btn {
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 18px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        /* Pastel mood button colors */
+        .mood-btn.bad {
+            background-color: #f8c8c8; /* Light pastel red */
+        }
+        .mood-btn.neutral {
+            background-color: #f6d8b7; /* Soft peach */
+        }
+        .mood-btn.good {
+            background-color: #b8f8c1; /* Light mint green */
+        }
+        .mood-btn.bright-good {
+            background-color: #90f4c7; /* Pastel bright green */
+        }
+
+        /* Change button color on hover */
+        .mood-btn:hover {
+            transform: scale(1.1); /* Slightly grow the button */
+        }
+
+        /* Text area for day summary */
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            border: 2px solid #f1c6b5; /* Soft border color */
+            background-color: #fef2e8; /* Very light peach */
+            color: #333;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: #ff6f61; /* Focus on border color */
+            outline: none;
+        }
+
+        /* Image upload section */
+        .upload-section {
+            margin-bottom: 20px;
+        }
+
+        .upload-section input {
+            padding: 10px;
+            border-radius: 10px;
+            background-color: #f8f2e3;
+            border: 2px solid #f1c6b5;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section input:hover {
+            background-color: #ffebcc; /* Light yellow when hovered */
+        }
+
+        /* Button Styling */
+        button {
+            background-color: #ff6f61; /* Pastel coral color */
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #e15b50; /* Slightly darker coral */
+        }
+
+        /* Style for journal entries */
+        #entries {
+            margin-top: 40px;
+        }
+
+        #entries div {
+            background-color: #fef2e8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #f1c6b5;
+        }
+
+        #entries img {
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Journal Entry</h1>
-    <form>
-        <label for="mood">Mood: </label>
-        <input type="range" id="mood" name="mood" min="0" max="10"><br><br>
-        <label for="picture">Upload a Picture: </label>
-        <input type="file" id="picture" name="picture"><br><br>
-        <label for="entry">Write Your Journal Entry: </label><br>
-        <textarea id="entry" name="entry" rows="4" cols="50"></textarea><br><br>
-        <button type="submit">Save Entry</button>
+    <h1>Your Journal</h1>
+    <form id="journalForm">
+        <div class="mood-btns">
+            <button type="button" class="mood-btn bad" data-mood="1">😡</button>
+            <button type="button" class="mood-btn bad" data-mood="2">😔</button>
+            <button type="button" class="mood-btn neutral" data-mood="3">😐</button>
+            <button type="button" class="mood-btn good" data-mood="4">🙂</button>
+            <button type="button" class="mood-btn good" data-mood="5">😊</button>
+            <button type="button" class="mood-btn bright-good" data-mood="6">😁</button>
+        </div>
+
+        <textarea id="daySummary" placeholder="How was your day?"></textarea>
+        
+        <div class="upload-section">
+            <label for="photo">Upload a photo (optional):</label>
+            <input type="file" id="photo" name="photo">
+        </div>
+
+        <button type="submit">Save Journal Entry</button>
     </form>
+
+    <h2>Your Journal Entries:</h2>
+    <div id="entries"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const moodButtons = document.querySelectorAll('.mood-btn');
+            const daySummary = document.getElementById('daySummary');
+            const photoInput = document.getElementById('photo');
+            const journalForm = document.getElementById('journalForm');
+            const entriesContainer = document.getElementById('entries');
+            
+            let selectedMood = null;
+
+            // Add event listener to mood buttons
+            moodButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    selectedMood = button.getAttribute('data-mood');
+                    moodButtons.forEach(btn => btn.style.border = "none"); // Reset all button borders
+                    button.style.border = "2px solid black"; // Highlight selected button
+                });
+            });
+
+            // Save the journal entry to localStorage
+            journalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                if (!selectedMood) {
+                    alert("Please select a mood!");
+                    return;
+                }
+
+                const note = daySummary.value;
+                const photo = photoInput.files[0];
+                const date = new Date().toLocaleDateString();
+
+                const entry = {
+                    mood: selectedMood,
+                    note: note,
+                    photo: photo ? URL.createObjectURL(photo) : null,
+                    date: date
+                };
+
+                let entries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+                entries.push(entry);
+                localStorage.setItem('journalEntries', JSON.stringify(entries));
+
+                displayEntries();
+                journalForm.reset(); // Reset the form after submission
+                selectedMood = null; // Reset selected mood
+                moodButtons.forEach(btn => btn.style.border = "none"); // Reset button styles
+            });
+
+            // Display the journal entries
+            function displayEntries() {
+                const entries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+                entriesContainer.innerHTML = '';
+
+                entries.forEach(entry => {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.innerHTML = `
+                        <p><strong>Date:</strong> ${entry.date}</p>
+                        <p><strong>Mood:</strong> ${getMoodText(entry.mood)}</p>
+                        <p><strong>Note:</strong> ${entry.note}</p>
+                        ${entry.photo ? `<img src="${entry.photo}" alt="mood photo" width="100" height="100">` : ''}
+                        <hr>
+                    `;
+                    entriesContainer.appendChild(entryDiv);
+                });
+            }
+
+            // Helper function to display the mood text based on the value
+            function getMoodText(moodValue) {
+                switch (moodValue) {
+                    case '1': return 'Very Bad';
+                    case '2': return 'Bad';
+                    case '3': return 'Neutral';
+                    case '4': return 'Good';
+                    case '5': return 'Very Good';
+                    case '6': return 'Awesome';
+                    default: return 'Unknown Mood';
+                }
+            }
+
+            // Initial display of journal entries
+            displayEntries();
+        });
+    </script>
 </body>
 </html>
-
